@@ -1,0 +1,160 @@
+const url = `https://striveschool-api.herokuapp.com/books`;
+const inputSearchBooks = document.getElementById("search-books");
+const divContainerCards = document.getElementById("cards-books");
+const counterCart = document.getElementById("counterCart");
+let globalCounterCart = 0;
+let cartIcon = document.getElementById("cartOffCanvas");
+let quantityOffCanvas = document.getElementById("cartItemCount");
+
+const searchBooks = (event) => {
+    event.preventDefault();
+    const searchQuery = inputSearchBooks.value.trim(); 
+    const urlBooks = `${url}?title=${encodeURIComponent(searchQuery)}`; 
+
+    fetch(urlBooks)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error('Errore nella risposta di rete: ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            divContainerCards.innerHTML = ""; 
+            if (data.length > 0) {
+                data.filter(elem => !inputSearchBooks.value || elem.title.toLowerCase().trim().includes(inputSearchBooks.value.toLowerCase().trim())).forEach(book => createBooksCards(divContainerCards, book));
+            } else {
+                divContainerCards.innerHTML = "<p>Nessun libro trovato.</p>";
+            }
+        })
+        .catch((error) => {
+            console.error('Si è verificato un errore:', error);
+            divContainerCards.innerHTML = "<p>Si è verificato un errore durante la ricerca dei libri.</p>";
+        });
+};
+
+
+//FUNCTION FOR CREATE PAGE CARDS/////////////////////////
+
+const createBooksCards = (divToAppend, cardData) => {
+
+    const divCardWrapper = document.createElement("div");
+    divCardWrapper.setAttribute("class", "col-sm-12 col-md-6 col-lg-3 d-flex justify-content-center mb-4");
+    
+    const divCard = document.createElement("div");
+    divCard.setAttribute("class", "card");
+    
+    const imgBook = document.createElement("img");
+    imgBook.setAttribute("class", "card-img-top w-100");
+    imgBook.src = cardData.img;
+
+    const cardBody = document.createElement("div");
+    cardBody.setAttribute("class", "card-body");
+
+    const title = document.createElement("h5");
+    title.setAttribute("class", "card-title")
+    title.innerText = cardData.title;
+
+    
+    const price = document.createElement("p");
+    price.setAttribute("class", "card-text")
+    price.innerText = cardData.price + "€";
+    
+    const category = document.createElement("p");
+    category.setAttribute("class", "card-text")
+    category.innerText = cardData.category;
+
+    const divButton = document.createElement("div");
+    divButton.setAttribute("class", "card-footer text-center");
+
+    const button = document.createElement("button");
+    button.setAttribute("class", "btn btn-text");
+    button.innerText = "ACQUISTA LIBRO";
+
+    divButton.appendChild(button);
+    cardBody.append(title, price, category);
+    divCard.append(imgBook, cardBody, divButton);
+    divToAppend.append(divCard);
+    divCardWrapper.append(divCard);  
+    divToAppend.append(divCardWrapper);
+
+
+//ADD EVENT LISTENER ON BUTTON OF PAGE CARDS/////////////// 
+//const counterCart = document.getElementById("counterCart");
+//let globalCounterCart = 0;
+//let quantityOffCanvas = document.getElementById("cartItemCount");
+
+    button.addEventListener("click", () => {
+       if (globalCounterCart >= 0) {
+        globalCounterCart++
+        counterCart.innerText = globalCounterCart;
+        quantityOffCanvas.innerText = globalCounterCart;
+        divCard.classList.add("opacity")
+        addToCart(cardData)
+       } 
+    })
+
+//ADD EVENT LISTENER ON ICON "CART"/////////
+
+    cartIcon.addEventListener("click", () => {
+        document.getElementById("offcanvasExample")
+    })
+
+//FUNCTION FOR CREATE OFFCANVAS CARDS/////////    
+    
+    const addToCart = (cardData) => {
+        
+        const cartCard = document.createElement("div");
+        cartCard.setAttribute("class", "d-flex justify-content-between mb-2 border-bottom pb-2");
+    
+        const imgBook = document.createElement("img");
+        imgBook.setAttribute("class", "w-25 modifyImg");
+        imgBook.src = cardData.img;
+    
+        const cartCardBody = document.createElement("div");
+        cartCardBody.setAttribute("class", "ms-3");
+    
+        const title = document.createElement("h5");
+        title.setAttribute("class", "mb-1");
+        title.innerText = cardData.title;
+
+     
+    
+        const price = document.createElement("p");
+        price.setAttribute("class", "mb-1");
+        price.innerText = `€${cardData.price}`;
+
+        const buttonRemove = document.createElement("button");
+        buttonRemove.setAttribute("class", "btn btn-secondary h-50");
+        buttonRemove.innerText = "X"
+    
+        cartCardBody.append(title, price);
+        cartCard.append(imgBook, cartCardBody, buttonRemove);
+        cartContainer.appendChild(cartCard);
+        
+        
+
+//THIS BUTTON REMOVES THE CARD FROM THE OFFONCAVAS//////////
+        
+
+    buttonRemove.addEventListener("click", () => {
+            if (globalCounterCart >= 0) {
+                globalCounterCart--
+                counterCart.innerText = globalCounterCart;
+                quantityOffCanvas.innerText = globalCounterCart;
+                divCard.classList.remove("opacity")
+                button.innerText = "ACQUISTA LIBRO";
+                cartCard.remove()
+        }})
+       
+
+       
+    };
+
+
+}
+
+
+
+
+
+document.querySelector('form').addEventListener('submit', searchBooks);
