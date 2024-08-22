@@ -9,7 +9,7 @@ let quantityOffCanvas = document.getElementById("cartItemCount");
 const searchBooks = (event) => {
     event.preventDefault();
     const searchQuery = inputSearchBooks.value.trim(); 
-    const urlBooks = `${url}?title=${encodeURIComponent(searchQuery)}`; 
+    const urlBooks = `${url}?title=${(searchQuery)}`; 
 
     fetch(urlBooks)
         .then((response) => {
@@ -19,6 +19,7 @@ const searchBooks = (event) => {
             return response.json();
         })
         .then((data) => {
+            
             divContainerCards.innerHTML = ""; 
             if (data.length > 0) {
                 data.filter(elem => !inputSearchBooks.value || elem.title.toLowerCase().trim().includes(inputSearchBooks.value.toLowerCase().trim())).forEach(book => createBooksCards(divContainerCards, book));
@@ -36,6 +37,8 @@ const searchBooks = (event) => {
 //FUNCTION FOR CREATE PAGE CARDS/////////////////////////
 
 const createBooksCards = (divToAppend, cardData) => {
+
+
 
     const divCardWrapper = document.createElement("div");
     divCardWrapper.setAttribute("class", "col-sm-12 col-md-6 col-lg-3 d-flex justify-content-center mb-4");
@@ -63,6 +66,23 @@ const createBooksCards = (divToAppend, cardData) => {
     category.setAttribute("class", "card-text")
     category.innerText = cardData.category;
 
+    const divTwoButton = document.createElement("div");
+    divTwoButton.setAttribute("class", "d-flex justify-content-between");
+
+    const buttonSalta = document.createElement("button")
+    buttonSalta.setAttribute("class", "btn btn-warning");
+    buttonSalta.innerText = "SALTA";
+    
+    const buttonDettagli = document.createElement("button");
+    buttonDettagli.setAttribute("class", "btn btn-secondary");
+    buttonDettagli.innerText = "DETTAGLI";
+    
+
+     // EVENT LISTENER PER BUTTON "DETTAGLI"////////////
+   buttonDettagli.addEventListener("click", () => {
+    window.location.href = `details.html?id=${cardData.asin}`;
+})
+
     const divButton = document.createElement("div");
     divButton.setAttribute("class", "card-footer text-center");
 
@@ -70,13 +90,17 @@ const createBooksCards = (divToAppend, cardData) => {
     button.setAttribute("class", "btn btn-text");
     button.innerText = "ACQUISTA LIBRO";
 
+    
+    divTwoButton.append(buttonDettagli, buttonSalta);
     divButton.appendChild(button);
     cardBody.append(title, price, category);
-    divCard.append(imgBook, cardBody, divButton);
-    divToAppend.append(divCard);
-    divCardWrapper.append(divCard);  
+    divCard.append(imgBook, cardBody, divTwoButton, divButton);
+    divCardWrapper.append(divCard); 
     divToAppend.append(divCardWrapper);
 
+    
+     
+    
 
 //ADD EVENT LISTENER ON BUTTON OF PAGE CARDS/////////////// 
 //const counterCart = document.getElementById("counterCart");
@@ -89,7 +113,8 @@ const createBooksCards = (divToAppend, cardData) => {
         counterCart.innerText = globalCounterCart;
         quantityOffCanvas.innerText = globalCounterCart;
         divCard.classList.add("opacity")
-        addToCart(cardData)
+        button.innerText = "AGGIUNTO AL CARRELLO";
+        addToCart(cardData, divCard) 
        } 
     })
 
@@ -99,9 +124,20 @@ const createBooksCards = (divToAppend, cardData) => {
         document.getElementById("offcanvasExample")
     })
 
+
+//ADD EVENT LISTENER BUTTONSALTA/////////   
+
+buttonSalta.addEventListener("click", () => {
+    divCardWrapper.remove();
+})}
+
+  ;
+
+
+
 //FUNCTION FOR CREATE OFFCANVAS CARDS/////////    
     
-    const addToCart = (cardData) => {
+    const addToCart = (cardData, originalCard) => {
         
         const cartCard = document.createElement("div");
         cartCard.setAttribute("class", "d-flex justify-content-between mb-2 border-bottom pb-2");
@@ -137,24 +173,27 @@ const createBooksCards = (divToAppend, cardData) => {
         
 
     buttonRemove.addEventListener("click", () => {
-            if (globalCounterCart >= 0) {
-                globalCounterCart--
+            if (globalCounterCart > 0) {
+                globalCounterCart--;
                 counterCart.innerText = globalCounterCart;
                 quantityOffCanvas.innerText = globalCounterCart;
-                divCard.classList.remove("opacity")
-                button.innerText = "ACQUISTA LIBRO";
+                originalCard.classList.remove("opacity")
+                originalCard.querySelector(".btn-text").innerText = "ACQUISTA LIBRO";
+                
                 cartCard.remove()
+                
+
+                
         }})
+
+
        
 
        
     };
 
 
-}
 
 
 
-
-
-document.querySelector('form').addEventListener('submit', searchBooks);
+    document.getElementById('searchForm').addEventListener('submit', searchBooks)
